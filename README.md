@@ -42,7 +42,7 @@
 
 First, I need to login in GCP Console and create a service account for Terraform with Editor permissions. Then, download the JSON credentials.
 
-Then, to create a bucket in Cloud Storage to save Terraform backend state. Next, I enable Object Versioning for this bucket:
+~~Then, to create a bucket in Cloud Storage to save Terraform backend state. Next, I enable Object Versioning for this bucket:~~
 
 ```bash
 
@@ -56,4 +56,5 @@ Also, Google Compute Engine API should be enabled.
 ## State
 
 This is the graph of infrastructure right now:
-![graph1](images/graph1.png)
+![graph1](images/graph2.png)
+
