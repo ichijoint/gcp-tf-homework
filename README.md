@@ -52,9 +52,7 @@ gsutil versioning set on gs://tf-state-homework-324018
 
 Also, Google Compute Engine API should be enabled.
 
-
 ## State
 
 This is the graph of infrastructure right now:
 ![graph1](images/graph2.png)
-

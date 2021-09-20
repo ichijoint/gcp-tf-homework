@@ -3,5 +3,5 @@ variable "project" {
 }
 variable "script" {
     type = string
-    default = "startup-lamp.sh"
+    default = "startup-lamp"
 }

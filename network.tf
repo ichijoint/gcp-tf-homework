@@ -1,18 +1,4 @@
 
-# resource "google_compute_network" "vpc_network" {
-#   name                    = "terraform-network"
-#   auto_create_subnetworks = false
-# }
-
-# resource "google_compute_subnetwork" "lamp_subnetwork" {
-#   name          = "terraform-subnetwork"
-#   ip_cidr_range = "10.0.2.0/16"
-#   region        = var.region
-#   network       = google_compute_network.vpc_network.id
-# }
-
-
-
 # Internal HTTP load balancer with a managed instance group backend
 
 # VPC
@@ -48,7 +34,7 @@ resource "google_compute_forwarding_rule" "google_compute_forwarding_rule" {
   provider              = google-beta
   region                = var.region
   depends_on            = [google_compute_subnetwork.proxy_subnet]
-  ip_protocol           = "HTTP"
+  ip_protocol           = "TCP"
   load_balancing_scheme = "INTERNAL_MANAGED"
   port_range            = "80"
   target                = google_compute_region_target_http_proxy.default.id
@@ -89,13 +75,10 @@ resource "google_compute_region_backend_service" "default" {
   }
 }
 
-resource "random_id" "randomstr" {
-  byte_length = 8
-}
 
 # instance template
 resource "google_compute_instance_template" "instance_template" {
-  name         = "l7-ilb-mig-template-${random_id.randomstr.hex}"
+  name         = "l7-ilb-mig-template-${random_id.name_suffix.hex}"
   provider     = google-beta
   machine_type = var.instance_type
   tags         = ["http-server", "ssh"]
@@ -113,8 +96,7 @@ resource "google_compute_instance_template" "instance_template" {
     boot         = true
   }
 
-  # 
-  metadata_startup_script = module.backend.startup-script
+  metadata_startup_script = module.startup.startup-script-link
 
   lifecycle {
     create_before_destroy = true
@@ -182,19 +164,29 @@ resource "google_compute_firewall" "fw-ilb-to-backends" {
   }
 }
 
-# test instance
-# resource "google_compute_instance" "vm-test" {
-#   name         = "l7-ilb-test-vm"
-#   provider     = google-beta
-#   zone         = var.zone
-#   machine_type = var.instance_type
-#   network_interface {
-#     network    = google_compute_network.ilb_network.id
-#     subnetwork = google_compute_subnetwork.ilb_subnet.id
-#   }
-#   boot_disk {
-#     initialize_params {
-#       image = var.instance_os
-#     }
-#   }
-# }
+
+resource "google_compute_forwarding_rule" "default" {
+  provider        = google-beta
+  name            = "website-forwarding-rule"
+  region          = var.region
+  port_range      = 80
+  backend_service = google_compute_region_backend_service.backend.id
+}
+resource "google_compute_region_backend_service" "backend" {
+  provider              = google-beta
+  name                  = "website-backend"
+  region                = var.region
+  load_balancing_scheme = "EXTERNAL"
+  health_checks         = [google_compute_region_health_check.hc.id]
+}
+resource "google_compute_region_health_check" "hc" {
+  provider           = google-beta
+  name               = "check-website-backend"
+  check_interval_sec = 1
+  timeout_sec        = 1
+  region             = var.region
+
+  tcp_health_check {
+    port = "80"
+  }
+}

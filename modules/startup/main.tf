@@ -6,6 +6,6 @@ resource "google_storage_bucket" "script_bucket" {
 
 resource "google_storage_bucket_object" "startup-lamp" {
   name   = var.script
-  source = "./modules/backend/${var.script}"
+  source = "./modules/startup/${var.script}"
   bucket = google_storage_bucket.script_bucket.name
 }

@@ -1,32 +1,5 @@
-# # resource "google_compute_instance" "lamp_instance" {
-# #   name         = "terraform-instance"
-# #   machine_type = var.instance_type
 
-# #   boot_disk {
-# #     initialize_params {
-# #       image = var.instance_os
-# #     }
-# #   }
 
-# #   network_interface {
-# #     subnetwork = google_compute_subnetwork.lamp_subnetwork.self_link
-# #     # no access_config so instances have no public IP
-# #   }
-# #   tags = ["ssh"]
-# # }
-
-# resource "google_compute_health_check" "autohealing" {
-#   name                = "autohealing-health-check"
-#   check_interval_sec  = 5
-#   timeout_sec         = 5
-#   healthy_threshold   = 2
-#   unhealthy_threshold = 10 # 50 seconds
-
-#   http_health_check {
-#     request_path = "/"
-#     port         = "80"
-#   }
-# }
 
 # resource "google_compute_instance_group_manager" "lamp_mig" {
 #   name = "lamp-mig"
