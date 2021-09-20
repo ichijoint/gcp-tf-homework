@@ -48,7 +48,7 @@ resource "google_compute_forwarding_rule" "google_compute_forwarding_rule" {
   provider              = google-beta
   region                = var.region
   depends_on            = [google_compute_subnetwork.proxy_subnet]
-  ip_protocol           = "TCP"
+  ip_protocol           = "HTTP"
   load_balancing_scheme = "INTERNAL_MANAGED"
   port_range            = "80"
   target                = google_compute_region_target_http_proxy.default.id
@@ -89,9 +89,13 @@ resource "google_compute_region_backend_service" "default" {
   }
 }
 
+resource "random_id" "randomstr" {
+  byte_length = 8
+}
+
 # instance template
 resource "google_compute_instance_template" "instance_template" {
-  name         = "l7-ilb-mig-template"
+  name         = "l7-ilb-mig-template-${random_id.randomstr.hex}"
   provider     = google-beta
   machine_type = var.instance_type
   tags         = ["http-server", "ssh"]
@@ -109,32 +113,9 @@ resource "google_compute_instance_template" "instance_template" {
     boot         = true
   }
 
-  # install nginx and serve a simple web page
-  metadata = {
-    startup-script = <<-EOF1
-      #! /bin/bash
-      set -euo pipefail
+  # 
+  metadata_startup_script = module.backend.startup-script
 
-      export DEBIAN_FRONTEND=noninteractive
-      apt-get update
-      apt-get install -y apache2 mariadb-server php libapache2-mod-php php-mysql jq
-
-      NAME=$(curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/hostname")
-      IP=$(curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip")
-      METADATA=$(curl -f -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/?recursive=True" | jq 'del(.["startup-script"])')
-
-      cat <<EOF > /var/www/html/index.html
-      <pre>
-      Name: $NAME
-      IP: $IP
-      Metadata: $METADATA
-      </pre>
-      EOF
-
-      systemctl enable apache2
-      systemctl reload apache2
-    EOF1
-  }
   lifecycle {
     create_before_destroy = true
   }
@@ -160,7 +141,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
     name              = "primary"
   }
   base_instance_name = "vm"
-  target_size        = 2
+  target_size        = var.mig_size
 }
 
 # allow all access from IAP and health check ranges
@@ -202,18 +183,18 @@ resource "google_compute_firewall" "fw-ilb-to-backends" {
 }
 
 # test instance
-resource "google_compute_instance" "vm-test" {
-  name         = "l7-ilb-test-vm"
-  provider     = google-beta
-  zone         = var.zone
-  machine_type = var.instance_type
-  network_interface {
-    network    = google_compute_network.ilb_network.id
-    subnetwork = google_compute_subnetwork.ilb_subnet.id
-  }
-  boot_disk {
-    initialize_params {
-      image = var.instance_os
-    }
-  }
-}
+# resource "google_compute_instance" "vm-test" {
+#   name         = "l7-ilb-test-vm"
+#   provider     = google-beta
+#   zone         = var.zone
+#   machine_type = var.instance_type
+#   network_interface {
+#     network    = google_compute_network.ilb_network.id
+#     subnetwork = google_compute_subnetwork.ilb_subnet.id
+#   }
+#   boot_disk {
+#     initialize_params {
+#       image = var.instance_os
+#     }
+#   }
+# }

@@ -1,43 +1,15 @@
-terraform {
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "3.84.0"
-    }
-  }
-
-  backend "gcs" {
-    bucket = "homework-2-321920-state"
-    prefix = "terraform/state"
-  }
-}
 
 
-provider "google" {
-  credentials = file(var.credentials_file)
-  project     = var.project
-  region      = var.region
-  zone        = var.zone
-}
-provider "google-beta" {
-  credentials = file(var.credentials_file)
-  project     = var.project
-  region      = var.region
-  zone        = var.zone
-}
 
-output "bucket_name" {
-  value = module.backend.bucket_name
-}
 
-resource "google_project_service" "enable_cloudbilling" {
-  project = var.project
-  service = "cloudbilling.googleapis.com"
-}
-resource "google_project_service" "enable_cloudresourcemanager" {
-  project = var.project
-  service = "cloudresourcemanager.googleapis.com"
-}
+# resource "google_project_service" "enable_cloudbilling" {
+#   project = var.project
+#   service = "cloudbilling.googleapis.com"
+# }
+# resource "google_project_service" "enable_cloudresourcemanager" {
+#   project = var.project
+#   service = "cloudresourcemanager.googleapis.com"
+# }
 
 
 # data "google_billing_account" "acct" {
@@ -65,3 +37,16 @@ resource "google_project_service" "enable_cloudresourcemanager" {
 #   #   "projects/base-project-196723/regions/us-central1/subnetworks/subnet-1",
 #   # ]
 # }
+
+
+
+
+module "backend" {
+  source = "./modules/backend"
+}
+
+module "startup" {
+  source  = "./modules/startup"
+  project = var.project
+  script  = var.script
+}
