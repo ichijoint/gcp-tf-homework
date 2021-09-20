@@ -12,8 +12,8 @@ resource "google_compute_subnetwork" "lamp_subnetwork" {
 }
 
 resource "google_compute_firewall" "allow-ssh-from-user" {
-  name     = "allow-user-ssh"
-  network  = google_compute_network.vpc_network.name
+  name    = "allow-user-ssh"
+  network = google_compute_network.vpc_network.name
   # provider = "google.shared-network"
   allow {
     protocol = "tcp"
