@@ -1,7 +1,7 @@
-variable "sql-user" {
+// variable "sql-user" {
     
-}
+// }
 
-variable "sql-password" {
+// variable "sql-password" {
     
-}
+// }

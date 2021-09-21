@@ -74,9 +74,6 @@ resource "google_compute_region_backend_service" "default" {
   }
 }
 
-
-
-
 # health check
 resource "google_compute_region_health_check" "default" {
   name     = "l7-ilb-hc"
@@ -86,8 +83,6 @@ resource "google_compute_region_health_check" "default" {
     port_specification = "USE_SERVING_PORT"
   }
 }
-
-
 
 # allow all access from IAP and health check ranges
 resource "google_compute_firewall" "fw-iap" {
@@ -126,7 +121,6 @@ resource "google_compute_firewall" "fw-ilb-to-backends" {
     ports    = ["80", "443", "8080"]
   }
 }
-
 
 resource "google_compute_forwarding_rule" "default" {
   provider        = google-beta

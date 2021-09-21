@@ -55,4 +55,4 @@ Also, Google Compute Engine API should be enabled.
 ## State
 
 This is the graph of infrastructure right now:
-![graph1](images/graph2.png)
+![graph1](images/graph4.png)

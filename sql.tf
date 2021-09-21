@@ -15,6 +15,6 @@ resource "google_sql_database_instance" "instance" {
 resource "google_sql_user" "users" {
   name     = "me"
   instance = google_sql_database_instance.instance.name
-  host     = var.user_ip
+  host     = "alex-kay"
   password = "changeme"
 }
