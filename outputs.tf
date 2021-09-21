@@ -1,6 +1,12 @@
-# output "instance_inner_ip" {
-#   value = google_compute_instance.lamp_instance.network_interface.0.network_ip
-# }
-output "bucket_name" {
-  value = module.startup.bucket_name
+
+// output "bucket_name" {
+//   value = module.startup.bucket_name
+// }
+
+output "global-address" {
+  value = google_compute_global_address.loadbalancer_address.address
+}
+output "lb_ext_ip" {
+  value = google_compute_forwarding_rule.default.ip_address
+
 }

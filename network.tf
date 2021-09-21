@@ -1,4 +1,3 @@
-
 # Internal HTTP load balancer with a managed instance group backend
 
 # VPC
@@ -76,32 +75,7 @@ resource "google_compute_region_backend_service" "default" {
 }
 
 
-# instance template
-resource "google_compute_instance_template" "instance_template" {
-  name         = "l7-ilb-mig-template-${random_id.name_suffix.hex}"
-  provider     = google-beta
-  machine_type = var.instance_type
-  tags         = ["http-server", "ssh"]
 
-  network_interface {
-    network    = google_compute_network.ilb_network.id
-    subnetwork = google_compute_subnetwork.ilb_subnet.id
-    access_config {
-      # add external ip to fetch packages
-    }
-  }
-  disk {
-    source_image = var.instance_os
-    auto_delete  = true
-    boot         = true
-  }
-
-  metadata_startup_script = module.startup.startup-script-link
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
 
 # health check
 resource "google_compute_region_health_check" "default" {
@@ -113,18 +87,7 @@ resource "google_compute_region_health_check" "default" {
   }
 }
 
-# MIG
-resource "google_compute_region_instance_group_manager" "mig" {
-  name     = "l7-ilb-mig1"
-  provider = google-beta
-  region   = var.region
-  version {
-    instance_template = google_compute_instance_template.instance_template.id
-    name              = "primary"
-  }
-  base_instance_name = "vm"
-  target_size        = var.mig_size
-}
+
 
 # allow all access from IAP and health check ranges
 resource "google_compute_firewall" "fw-iap" {
@@ -146,7 +109,7 @@ resource "google_compute_firewall" "allow-ssh-from-user" {
     protocol = "tcp"
     ports    = ["22"]
   }
-  source_ranges = ["${var.user_ip}"]
+  source_ranges = ["0.0.0.0/0"]
   target_tags   = ["ssh"]
 }
 
@@ -190,3 +153,8 @@ resource "google_compute_region_health_check" "hc" {
     port = "80"
   }
 }
+
+resource "google_compute_global_address" "loadbalancer_address" {
+  name = "global-lb-ip"
+}
+
