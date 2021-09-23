@@ -11,24 +11,24 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "tf-state-homework-324018"
+    bucket = "homework-2-321920-state"
     prefix = "terraform/state"
   }
 }
 
-
 provider "google" {
-  credentials = file(var.credentials_file)
-  project     = var.project
-  region      = var.region
-  zone        = var.zone
+  #   credentials = file(var.credentials_file)
+  project = var.project
+  region  = var.region
+  zone    = var.zone
 }
 provider "google-beta" {
-  credentials = file(var.credentials_file)
-  project     = var.project
-  region      = var.region
-  zone        = var.zone
+  #   credentials = file(var.credentials_file)
+  project = var.project
+  region  = var.region
+  zone    = var.zone
 }
 provider "random" {
-  # Configuration options
+}
+provider "null" {
 }

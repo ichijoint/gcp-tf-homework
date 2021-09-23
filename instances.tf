@@ -1,28 +1,30 @@
 # instance template
 resource "google_compute_instance_template" "instance_template" {
-  name         = "l7-ilb-mig-template-${random_id.name_suffix.hex}"
+  name_prefix  = "l7-ilb-mig-template-"
   provider     = google-beta
   machine_type = var.instance_type
   tags         = ["http-server", "ssh"]
 
   network_interface {
-    network    = google_compute_network.ilb_network.id
-    subnetwork = google_compute_subnetwork.ilb_subnet.id
-    access_config {
-      # add external ip to fetch packages
-    }
+    network    = module.vpc.network_name
+    subnetwork = module.vpc.subnets["${var.region}/${var.network_name}-subnet"].name
   }
   disk {
     source_image = var.instance_os
     auto_delete  = true
     boot         = true
   }
-
+  metadata = {
+    ssh-keys = "${file(var.ssh_public_key)}"
+  }
   metadata_startup_script = module.startup.startup-script
 
   lifecycle {
     create_before_destroy = true
   }
+  depends_on = [
+    module.vpc
+  ]
 }
 
 resource "google_compute_health_check" "autohealing_mig_hc" {
@@ -49,19 +51,12 @@ resource "google_compute_region_instance_group_manager" "mig" {
   }
   base_instance_name = "vm"
   target_size        = var.mig_size
+
+auto_healing_policies {
+    health_check      = google_compute_health_check.autohealing_mig_hc.id
+    initial_delay_sec = 300
+  }
 }
-
-# SSH key
-// resource "google_compute_project_metadata" "my_ssh_key" {
-//   metadata = {
-//     ssh-keys = <<EOF
-//       dev:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILg6UtHDNyMNAh0GjaytsJdrUxjtLy3APXqZfNZhvCeT dev
-//       foo:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILg6UtHDNyMNAh0GjaytsJdrUxjtLy3APXqZfNZhvCeT bar
-//     EOF
-//   }
-// }
-
-
 
 # resource "google_compute_instance_group_manager" "lamp_mig" {
 #   name = "lamp-mig"
