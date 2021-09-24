@@ -44,19 +44,8 @@
 
 ## Homework setup
 
-First, I need to login in GCP Console and create a service account for Terraform with Editor permissions. Then, download the JSON credentials.
-
-~~Then, to create a bucket in Cloud Storage to save Terraform backend state. Next, I enable Object Versioning for this bucket:~~
-
-```bash
-
-gsutil versioning set on gs://tf-state-homework-324018
-
-```
-
-Also, Google Compute Engine API should be enabled.
 
 ## State
 
-This is the graph of infrastructure right now:
-![graph1](images/graph4.png)
+This is the graph of infrastructure right now (refactoring in progress):
+![graph1](images/graph5.png)
