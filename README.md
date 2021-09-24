@@ -1,3 +1,7 @@
+# Terraform homework
+
+![scheme](images/scheme.png)
+
 # You should create an infrastructure, which is described on the diagram above
 
 1. Create Network and private subnetwork.
