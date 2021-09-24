@@ -33,7 +33,7 @@ module "vpc" {
     {
       name              = "route-ilb"
       description       = "route through ilb"
-      destination_range = "10.10.20.0/24"
+      destination_range = "10.0.0.0/20"
       next_hop_ilb      = google_compute_forwarding_rule.internal_load_balancer.self_link
     },
   ]
@@ -58,14 +58,17 @@ resource "google_compute_forwarding_rule" "internal_load_balancer" {
   region                = var.region
   load_balancing_scheme = "INTERNAL"
   all_ports             = true
+  allow_global_access   = true
   provider              = google-beta
 }
 
 resource "google_compute_region_backend_service" "backend_service" {
-  project       = var.project
-  name          = "ilb-backend"
-  region        = var.region
-  health_checks = [google_compute_health_check.tcp_health_check.self_link]
+  project                         = var.project
+  name                            = "ilb-backend"
+  region                          = var.region
+  health_checks                   = [google_compute_health_check.tcp_health_check.self_link]
+  session_affinity                = "CLIENT_IP"
+  connection_draining_timeout_sec = 10
 }
 
 module "cloud_router" {

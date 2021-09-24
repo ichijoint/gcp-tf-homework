@@ -55,13 +55,13 @@ resource "google_compute_region_instance_group_manager" "mig" {
   }
 }
 
-resource "google_compute_region_autoscaler" "lamp_austoscaler" {
+resource "google_compute_region_autoscaler" "lamp_autoscaler" {
   name   = "my-autoscaler"
   region = var.region
   target = google_compute_region_instance_group_manager.mig.id
 
   autoscaling_policy {
-    max_replicas    = 2
+    max_replicas    = 4
     min_replicas    = 2
     cooldown_period = 60
 
