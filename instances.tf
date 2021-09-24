@@ -52,7 +52,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
   base_instance_name = "vm"
   target_size        = var.mig_size
 
-auto_healing_policies {
+  auto_healing_policies {
     health_check      = google_compute_health_check.autohealing_mig_hc.id
     initial_delay_sec = 300
   }

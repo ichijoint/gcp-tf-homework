@@ -53,11 +53,12 @@ resource "google_compute_forwarding_rule" "this" {
   project               = var.project
   name                  = "${var.network_name}-fw-role"
   network               = module.vpc.network_name
-  subnetwork            = module.vpc.subnets["${var.region}/${var.network_name}-subnet-01"].name
+  subnetwork            = module.vpc.subnets["${var.region}/${var.network_name}-subnet-01"].id
   backend_service       = google_compute_region_backend_service.backend_service.self_link
   region                = var.region
   load_balancing_scheme = "INTERNAL"
   all_ports             = true
+  provider = google-beta
 }
 
 resource "google_compute_region_backend_service" "backend_service" {
