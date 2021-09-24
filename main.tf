@@ -3,13 +3,6 @@ module "services" {
   source  = "./modules/services"
 }
 
-module "backend" {
-  source = "./modules/backend"
-  depends_on = [
-    module.services
-  ]
-}
-
 module "startup" {
   source  = "./modules/startup"
   project = var.project
