@@ -9,12 +9,12 @@ module "vpc" {
 
   subnets = [
     {
-      subnet_name   = "${var.network_name}-subnet"
+      subnet_name   = "subnet1"
       subnet_ip     = "10.10.10.0/24"
       subnet_region = var.region
     },
     {
-      subnet_name   = "${var.network_name}-subnet-01"
+      subnet_name   = "subnet-ilb"
       subnet_ip     = "10.10.20.0/24"
       subnet_region = var.region
       purpose       = "INTERNAL_HTTPS_LOAD_BALANCER"
@@ -24,24 +24,24 @@ module "vpc" {
 
   routes = [
     {
-      name              = "${var.network_name}-egress-inet"
+      name              = "route-egress-inet"
       description       = "route through IGW to access internet"
       destination_range = "0.0.0.0/0"
       tags              = "egress-inet"
       next_hop_internet = "true"
     },
     {
-      name              = "${var.network_name}-ilb"
+      name              = "route-ilb"
       description       = "route through ilb"
       destination_range = "10.10.20.0/24"
-      next_hop_ilb      = google_compute_forwarding_rule.this.self_link
+      next_hop_ilb      = google_compute_forwarding_rule.internal_load_balancer.self_link
     },
   ]
 }
 
 resource "google_compute_health_check" "tcp_health_check" {
   project            = var.project
-  name               = "${var.network_name}-hc"
+  name               = "tcp-hc"
   check_interval_sec = 1
   timeout_sec        = 1
   tcp_health_check {
@@ -49,21 +49,21 @@ resource "google_compute_health_check" "tcp_health_check" {
   }
 }
 
-resource "google_compute_forwarding_rule" "this" {
+resource "google_compute_forwarding_rule" "internal_load_balancer" {
   project               = var.project
-  name                  = "${var.network_name}-fw-role"
+  name                  = "ilb-fw-role"
   network               = module.vpc.network_name
-  subnetwork            = module.vpc.subnets["${var.region}/${var.network_name}-subnet-01"].id
+  subnetwork            = module.vpc.subnets["${var.region}/subnet1"].id
   backend_service       = google_compute_region_backend_service.backend_service.self_link
   region                = var.region
   load_balancing_scheme = "INTERNAL"
   all_ports             = true
-  provider = google-beta
+  provider              = google-beta
 }
 
 resource "google_compute_region_backend_service" "backend_service" {
   project       = var.project
-  name          = "${var.network_name}-backend"
+  name          = "ilb-backend"
   region        = var.region
   health_checks = [google_compute_health_check.tcp_health_check.self_link]
 }

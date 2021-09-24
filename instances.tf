@@ -1,13 +1,13 @@
 # instance template
 resource "google_compute_instance_template" "instance_template" {
-  name_prefix  = "l7-ilb-mig-template-"
+  name_prefix  = "mig-template-"
   provider     = google-beta
   machine_type = var.instance_type
   tags         = ["http-server", "ssh"]
 
   network_interface {
     network    = module.vpc.network_name
-    subnetwork = module.vpc.subnets["${var.region}/${var.network_name}-subnet"].name
+    subnetwork = module.vpc.subnets["${var.region}/subnet1"].id
   }
   disk {
     source_image = var.instance_os
@@ -22,9 +22,6 @@ resource "google_compute_instance_template" "instance_template" {
   lifecycle {
     create_before_destroy = true
   }
-  depends_on = [
-    module.vpc
-  ]
 }
 
 resource "google_compute_health_check" "autohealing_mig_hc" {
@@ -58,43 +55,18 @@ resource "google_compute_region_instance_group_manager" "mig" {
   }
 }
 
-# resource "google_compute_instance_group_manager" "lamp_mig" {
-#   name = "lamp-mig"
+resource "google_compute_region_autoscaler" "lamp_austoscaler" {
+  name   = "my-autoscaler"
+  region = var.region
+  target = google_compute_region_instance_group_manager.mig.id
 
-#   base_instance_name = "lamp"
-#   zone               = "us-central1-a"
+  autoscaling_policy {
+    max_replicas    = 2
+    min_replicas    = 2
+    cooldown_period = 60
 
-#   version {
-#     name              = "lamp-mig"
-#     instance_template = google_compute_instance_template.instance_template.id
-#   }
-
-#   # target_pools = [google_compute_target_pool.instance_template.id]
-#   target_size = 2
-
-#   # named_port {
-#   #   name = "HTTP"
-#   #   port = 80
-#   # }
-
-#   auto_healing_policies {
-#     health_check      = google_compute_health_check.autohealing.id
-#     initial_delay_sec = 300
-#   }
-# }
-
-# resource "google_compute_autoscaler" "lamp_austoscaler" {
-#   name   = "my-autoscaler"
-#   zone   = "us-central1-a"
-#   target = google_compute_instance_group_manager.lamp_mig.id
-
-#   autoscaling_policy {
-#     max_replicas    = 2
-#     min_replicas    = 2
-#     cooldown_period = 60
-
-#     cpu_utilization {
-#       target = 0.5
-#     }
-#   }
-# }
+    cpu_utilization {
+      target = 0.5
+    }
+  }
+}
