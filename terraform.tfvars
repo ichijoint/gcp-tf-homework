@@ -1,4 +1,4 @@
-project = "homework-2-321920"
+project        = "homework-2-321920"
 user_ip        = "31.202.20.192/32"
 network_name   = "vpc-network"
 script         = "startup-lamp"
