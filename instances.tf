@@ -38,13 +38,16 @@ resource "google_compute_health_check" "autohealing_mig_hc" {
 }
 
 # MIG
-resource "google_compute_region_instance_group_manager" "mig" {
+resource "google_compute_instance_group_manager" "mig" {
   name     = "l7-ilb-mig1"
   provider = google-beta
-  region   = var.region
   version {
     instance_template = google_compute_instance_template.instance_template.id
     name              = "primary"
+  }
+  named_port {
+    name = "http"
+    port = 80
   }
   base_instance_name = "vm"
   target_size        = var.mig_size
@@ -58,7 +61,7 @@ resource "google_compute_region_instance_group_manager" "mig" {
 resource "google_compute_region_autoscaler" "lamp_autoscaler" {
   name   = "my-autoscaler"
   region = var.region
-  target = google_compute_region_instance_group_manager.mig.id
+  target = google_compute_instance_group_manager.mig.id
 
   autoscaling_policy {
     max_replicas    = 4
