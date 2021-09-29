@@ -69,4 +69,4 @@ Found a workaround for 'connect: cannot assign requested address' error when pro
 ## State
 
 This is the graph of infrastructure right now (refactoring in progress):
-![graph1](images/graph5.png)
+![graph1](images/graph6.png)
