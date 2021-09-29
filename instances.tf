@@ -58,9 +58,8 @@ resource "google_compute_instance_group_manager" "mig" {
   }
 }
 
-resource "google_compute_region_autoscaler" "lamp_autoscaler" {
+resource "google_compute_autoscaler" "lamp_autoscaler" {
   name   = "my-autoscaler"
-  region = var.region
   target = google_compute_instance_group_manager.mig.id
 
   autoscaling_policy {

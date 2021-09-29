@@ -32,12 +32,6 @@ module "vpc" {
       tags              = "egress-inet"
       next_hop_internet = "true"
     },
-    {
-      name              = "route-ilb"
-      description       = "route through lb"
-      destination_range = "10.0.0.0/20"
-      next_hop_ilb      = google_compute_global_forwarding_rule.global_forwarding_rule.self_link
-    },
   ]
 }
 
@@ -77,6 +71,7 @@ resource "google_compute_backend_service" "backend_service" {
     balancing_mode        = "RATE"
     max_rate_per_instance = 100
   }
+  security_policy = google_compute_security_policy.policy.self_link
 }
 
 resource "google_compute_url_map" "url_map" {
@@ -116,4 +111,34 @@ module "cloud_router" {
   nats = [{
     name = "my-nat-gateway"
   }]
+}
+
+# cloud armor example
+
+resource "google_compute_security_policy" "policy" {
+  name = "my-policy"
+
+  rule {
+    action   = "deny(403)"
+    priority = "1000"
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["9.9.9.0/24"]
+      }
+    }
+    description = "Deny access to IPs in 9.9.9.0/24"
+  }
+
+  rule {
+    action   = "allow"
+    priority = "2147483647"
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+    description = "default rule"
+  }
 }

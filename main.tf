@@ -9,12 +9,13 @@ module "startup" {
   script  = var.script
 }
 
-// module "secrets" {
-//   source       = "./modules/secrets"
-//   sql-user     = var.sql-user
-//   sql-password = var.sql-password
-//   depends_on = [ google_project_service.secretmanager ]
-// }
+module "sql" {
+  source       = "./modules/sql"
+  sql-user     = var.sql-user
+  sql-password = var.sql-password
+  project      = var.project
+  region       = var.region
+}
 
 resource "random_id" "name_suffix" {
   byte_length = 4
